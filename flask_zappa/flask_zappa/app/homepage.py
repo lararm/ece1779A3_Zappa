@@ -71,6 +71,12 @@ def upload_image_submit():
 
     return redirect(url_for('homepage'))
 
+@webapp.route('/search',methods=['POST'])
+def search():
+    print("#Search")
+    textSearch = request.form['txtSearch']
+    print(textSearch)
+    return render_template("homepage.html")
 
 def valid_image_extension(ext):
     for extension in ALLOWED_IMAGE_EXTENSIONS:

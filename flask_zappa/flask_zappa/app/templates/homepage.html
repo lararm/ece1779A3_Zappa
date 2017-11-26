@@ -74,7 +74,6 @@
                 </div>
                 <h1>Image Gallery</h1>
                 <div id="contain"></div>
-                <br>
 {#                 <form class="navbar-form navbar-left" role="search">#}
 {#                     <div class="row">#}
 {#                          <div class="col-xs-6 col-md-4">#}
@@ -91,21 +90,20 @@
 {#                    </button>#}
 {#                </form>#}
 
-           <form action="/hms/accommodations" method="GET">
+           <form action="/search" method="POST"  role="search">
               <div class="row">
                 <div class="col-xs-6 col-md-4">
                   <div class="input-group">
-               <input type="text" class="form-control" placeholder="Search" id="txtSearch"/>
-               <div class="input-group-btn">
-                    <button class="btn btn-default" type="submit">
-                    <span class="glyphicon glyphicon-search"></span>
-                    </button>
-               </div>
+                    <input type="text" class="form-control" placeholder="Search" name="txtSearch" style="width:800px"/>
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" type="submit">
+                        <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </div>
                </div>
                 </div>
               </div>
             </form>
-
 
       <div class="container">
           <div class="row">
