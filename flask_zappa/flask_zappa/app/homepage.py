@@ -3,9 +3,16 @@ from app import webapp
 from app import config
 import datetime
 import os
+import os.path
 import boto3
 import time
 import random
+import re
+from wand.image import Image
+from PIL import Image
+from app import collage
+
+ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
 
 @webapp.route('/homepage',methods=['GET','POST'])
 def homepage():
@@ -15,6 +22,10 @@ def homepage():
 @webapp.route('/upload_image_submit', methods=['POST'])
 def upload_image_submit():
     print("#image_submit")
+    #collage_test()
+
+    listofimages = ['flower1.jpg', 'flower2.jpg', 'flower3.jpg', 'flower4.jpg', 'flower5.jpg']
+    collage.make_collage(listofimages, 'collage5.jpg',500,450)
     # Get Session Information
     username = 'test' #escape(session['username'])
 
@@ -53,6 +64,8 @@ def upload_image_submit():
     image_url = (s3.generate_presigned_url('get_object', Params={'Bucket': id, 'Key': image_new_name},
                                            ExpiresIn=100)).split('?')[0]
 
+    print("image url: " + image_url )
+
     return redirect(url_for('homepage'))
 
 
@@ -79,3 +92,6 @@ def lambda_handler(event, context):
         print(e)
         print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
         raise e
+
+
+
