@@ -1,6 +1,7 @@
 from flask import render_template, session, request, escape, redirect, url_for,flash
 from app import webapp
 from app import config
+from app import dynamo
 import datetime
 import os
 import os.path
@@ -16,8 +17,11 @@ ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/g
 
 @webapp.route('/homepage',methods=['GET','POST'])
 def homepage():
-    return render_template("homepage.html")
 
+    image_list = dynamo.query_image()
+    print (image_list)
+    return render_template("homepage.html",image_names=image_list)
+    return render_template("homepage.html")
 
 @webapp.route('/upload_image_submit', methods=['POST'])
 def upload_image_submit():
@@ -68,6 +72,16 @@ def upload_image_submit():
 
     return redirect(url_for('homepage'))
 
+@webapp.route('/query_submit', methods=['POST'])
+def query_submit():
+
+    tags = request.form['query']
+    print (tags)
+    #image_list = query_tag_table(tags)
+
+    #image_list = dynamo.query_image()
+    #return render_template("homepage.html",image_names=image_list)
+    return render_template("homepage.html")
 
 def valid_image_extension(ext):
     for extension in ALLOWED_IMAGE_EXTENSIONS:
