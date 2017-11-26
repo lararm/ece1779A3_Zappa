@@ -74,6 +74,7 @@
                 </div>
                 <h1>Image Gallery</h1>
                 <div id="contain"></div>
+
 {#                 <form class="navbar-form navbar-left" role="search">#}
 {#                     <div class="row">#}
 {#                          <div class="col-xs-6 col-md-4">#}
@@ -90,20 +91,23 @@
 {#                    </button>#}
 {#                </form>#}
 
-           <form action="/search" method="POST"  role="search">
+
+           <form action="/query_submit" method="POST">
               <div class="row">
                 <div class="col-xs-6 col-md-4">
                   <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Search" name="txtSearch" style="width:800px"/>
-                    <div class="input-group-btn">
-                        <button class="btn btn-default" type="submit">
-                        <span class="glyphicon glyphicon-search"></span>
-                        </button>
-                    </div>
+               <input type="text" class="form-control" placeholder="Search" name="query" style="width: 800px"/>
+               <div class="input-group-btn">
+                    <button class="btn btn-default" type="submit">
+                    <span class="glyphicon glyphicon-search"></span>
+                    </button>
+               </div>
                </div>
                 </div>
               </div>
             </form>
+
+
 
       <div class="container">
           <div class="row">
@@ -114,21 +118,20 @@
 {#                     <input type="image" src="https://ece1779project2.s3.amazonaws.com/babygroot.jpg" name="image_name" alt="Lights" style="width:100%" value={{ image_name }}/>#}
 {#                  </form>#}
 
-{#             {% for image_name in image_names %}#}
-{#                  {{ image_name}}#}
-{#                  <div class="col-lg-3 col-md-4 col-xs-6 thumb" id="img">#}
-{#              <div class="thumbnail">#}
-{#                  <form action="transform_image" method="post" id="transform">#}
-{#                     <input type="image" src="{{image_name}}" name="image_name" alt="Lights" style="width:100%" value={{ image_name }}/>#}
-{#                  </form>#}
-{##}
-{#                  <div class="caption">#}
-{#                  </div>#}
-{#                </a>#}
-{##}
-{#              </div>#}
-{#            </div>#}
-{#            {% endfor %}#}
+             {% for image_name in image_names %}
+                  <div class="col-lg-3 col-md-4 col-xs-6 thumb" id="img">
+              <div class="thumbnail">
+                  <form action="transform_image" method="post" id="transform">
+                     <input type="image" src="{{image_name}}" name="image_name" alt="Lights" style="width:100%" value={{ image_name }}/>
+                  </form>
+
+                  <div class="caption">
+                  </div>
+                </a>
+
+              </div>
+            </div>
+            {% endfor %}
 
           </div>
         </div>

@@ -1,5 +1,5 @@
 
-from flask import render_template, url_for
+from flask import render_template, session, request, escape, redirect, url_for,flash
 from app import webapp
 
 import datetime
@@ -7,6 +7,6 @@ import datetime
 
 @webapp.route('/')
 def main():
-    return render_template("homepage.html")
+    return redirect(url_for('homepage'))
     
 
