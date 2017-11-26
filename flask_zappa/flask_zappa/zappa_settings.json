@@ -1,0 +1,15 @@
+{
+    "dev": {
+       "project_name": "flask_zappa3",
+       "keep_warm": false,
+       "debug": true,
+       "log_level": "DEBUG",
+       "s3_bucket": "lambdas3source",
+       "app_function": "app.webapp",
+       "http_methods": ["GET","POST"],
+       "parameter_depth": 1,
+       "timeout_seconds": 300,
+       "memory_size": 128,
+       "use_precompiled_packages": true
+    }
+}

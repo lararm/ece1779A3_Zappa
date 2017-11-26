@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<head>
+    <title>Add 2 Numbers</title>
+</head>
+<html>
+    <body>
+        
+        {{ error if error != None }}
+
+        <form method='post' action='/add_v3_submit'>
+            <label>N1</label>
+            <input type='text' name='n1' value="{{ n1 if n1 != None }}">
+
+            <label>N2</label>
+            <input type='text' name='n2' value="{{ n2 if n2 != None }}">
+
+            <input type='submit' value='Add'>
+            
+        </form>
+    <body>    
+</html>

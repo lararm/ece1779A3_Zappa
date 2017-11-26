@@ -1,0 +1,4 @@
+cfn_flip>=0.2.5
+
+[policy]
+awacs
