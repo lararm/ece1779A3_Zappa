@@ -12,6 +12,7 @@ import re
 from wand.image import Image
 from PIL import Image
 from app import collage
+import json
 
 ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
 
@@ -19,9 +20,9 @@ ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/g
 def homepage():
 
     image_list = dynamo.query_image()
-    print (image_list)
+
     return render_template("homepage.html",image_names=image_list)
-    return render_template("homepage.html")
+
 
 @webapp.route('/upload_image_submit', methods=['POST'])
 def upload_image_submit():
@@ -31,7 +32,7 @@ def upload_image_submit():
     listofimages = ['flower1.jpg', 'flower2.jpg', 'flower3.jpg', 'flower4.jpg', 'flower5.jpg']
     collage.make_collage(listofimages, 'collage5.jpg',500,450)
     # Get Session Information
-    username = 'test' #escape(session['username'])
+    #username = 'irfan' #escape(session['username'])
 
     # Get User Input
     image = request.files['image']
@@ -60,7 +61,7 @@ def upload_image_submit():
     unique_name = timestamp + "_" + randomnum + "_" + image_name
 
     # Upload image to S3
-    image_new_name = username + "/" + unique_name
+    image_new_name = unique_name
     s3.upload_fileobj(image,
                       id,
                       image_new_name,
@@ -76,12 +77,34 @@ def upload_image_submit():
 def query_submit():
 
     tags = request.form['query']
-    print (tags)
-    #image_list = query_tag_table(tags)
 
-    #image_list = dynamo.query_image()
-    #return render_template("homepage.html",image_names=image_list)
-    return render_template("homepage.html")
+    image_list = dynamo.query_tag_table(tags)
+
+    return render_template("homepage.html",image_names=image_list,query=[tags])
+
+@webapp.route('/parse_image', methods=['GET','POST'])
+def parse_image():
+
+    with open("face.json") as json_file:
+        response = json.load(json_file)
+
+    for face in response['FaceMatches']:
+        faceMatch = float(face['Similarity'])
+        if ((faceMatch>70.00) and (faceMatch<100.0)):
+            print ("I think hes in the image")
+    #print (face['Similarity'])
+    #print (response['FaceMatches'])
+
+    
+    #Tags = response['Labels']
+    #for tag in Tags:
+    #    tagName = tag['Name'].lower()
+    #    tagMatch = float(tag['Confidence'])
+    #    if ((tagMatch>=50.0) and (tagMatch<=100.0)):  #FIXME we can adjust this confidence factor
+    #        update_tags_table(tagName,image)
+
+    return redirect(url_for('homepage'))
+
 
 def valid_image_extension(ext):
     for extension in ALLOWED_IMAGE_EXTENSIONS:
