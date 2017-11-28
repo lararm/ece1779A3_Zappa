@@ -64,6 +64,7 @@ def make_collage(images, filename, width, init_height):
     # put images to the collage
     y = 0
     for coef, imgs_line in coefs_lines:
+        console.log(coef)
         if imgs_line:
             x = 0
             for img_path in imgs_line:

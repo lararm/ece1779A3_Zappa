@@ -10,9 +10,11 @@ import time
 import random
 import re
 from wand.image import Image
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from app import collage
 import json
+
+
 
 ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
 
@@ -55,11 +57,11 @@ def upload_image_submit():
     # s3 = boto3.client('s3')
     id = config.AWS_ID
 
-    # Creating unique name
+    # # Creating unique name
     timestamp = str(int(time.time()))
     randomnum = str(random.randint(0, 10000))
     unique_name = timestamp + "_" + randomnum + "_" + image_name
-
+    
     # Upload image to S3
     image_new_name = unique_name
     s3.upload_fileobj(image,
@@ -73,10 +75,12 @@ def upload_image_submit():
 
     return redirect(url_for('homepage'))
 
+
 @webapp.route('/query_submit', methods=['POST'])
 def query_submit():
-
+    print("#query_submit")
     tags = request.form['query']
+<<<<<<< HEAD
 
     image_list = dynamo.query_tag_table(tags)
 
@@ -90,21 +94,10 @@ def parse_image():
 
     for face in response['FaceMatches']:
         faceMatch = float(face['Similarity'])
-        if ((faceMatch>70.00) and (faceMatch<100.0)):
+        if ((faceMatch>=70.00) and (faceMatch<=100.0)):
             print ("I think hes in the image")
-    #print (face['Similarity'])
-    #print (response['FaceMatches'])
-
-    
-    #Tags = response['Labels']
-    #for tag in Tags:
-    #    tagName = tag['Name'].lower()
-    #    tagMatch = float(tag['Confidence'])
-    #    if ((tagMatch>=50.0) and (tagMatch<=100.0)):  #FIXME we can adjust this confidence factor
-    #        update_tags_table(tagName,image)
 
     return redirect(url_for('homepage'))
-
 
 def valid_image_extension(ext):
     for extension in ALLOWED_IMAGE_EXTENSIONS:
@@ -130,5 +123,16 @@ def lambda_handler(event, context):
         print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
         raise e
 
+def draw_retangle():
+    # "BoundingBox": {
+    #     "Width": 0.13733333349227905,
+    #     "Height": 0.20956256985664368,
+    #     "Left": 0.31066668033599854,
+    #     "Top": 0.15157680213451385
+    print("#draw retangle")
+    source_img = Image.open('flower1.jpg')
+    draw = ImageDraw.Draw(source_img)
+    draw.rectangle(((50, 50), (100, 100)),outline = "blue")
+    source_img.save("retangle.jpg")
 
 
