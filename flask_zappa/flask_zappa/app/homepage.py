@@ -21,9 +21,7 @@ ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/g
 
 @webapp.route('/homepage',methods=['GET','POST'])
 def homepage():
-
     image_list = dynamo.query_image()
-
     return render_template("homepage.html",image_names=image_list)
 
 
@@ -125,6 +123,7 @@ def upload_profile_submit():
     print("image url: " + image_url)
     url ='https://s3.amazonaws.com/lambdas3source.people/'+image_new_name
     dynamo.update_profiles_table(profile_name,url)
+
     return redirect(url_for('homepage'))
 
 @webapp.route('/query_submit', methods=['POST'])
@@ -132,6 +131,8 @@ def query_submit():
     print("#query_submit")
     tags = request.form['query']
 
+    if (len(tags) == 0):
+        return redirect(url_for('homepage'))
     image_list = dynamo.query_tag_table(tags)
     print(tags)
     return render_template("homepage.html",image_names=image_list,query=[tags])
