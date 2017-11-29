@@ -4,6 +4,9 @@ import random
 from PIL import Image
 import requests
 import boto3
+import time
+import random
+import io
 
 def make_collage(images, filename, width, init_height):
     print("#make_collage")
@@ -108,21 +111,23 @@ def make_collage(images, filename, width, init_height):
     # Create an S3 client
     s3 = boto3.client('s3')
     # s3 = boto3.client('s3')
-    id = config.AWS_ID
-
+    id = "lambdas3source"
     # # Creating unique name
     timestamp = str(int(time.time()))
     randomnum = str(random.randint(0, 10000))
-    unique_name = timestamp + "_" + randomnum + "_" + image_name
+    unique_name =  timestamp + "_" + randomnum + 'collage.jpg'
 
     # Upload image to S3
     image_new_name = unique_name
-    s3.upload_fileobj(image,
-                      id,
-                      image_new_name,
-                      ExtraArgs={"Metadata": {"Content-Type": image_type}})
+    imgByteArr = io.BytesIO()
+    collage_image.save(imgByteArr, format='PNG')
+    imgByteArr = imgByteArr.getvalue()
+
+
+    s3.put_object(Body=imgByteArr, Bucket='lambdas3source', Key='collage.jpg')
     image_url = (s3.generate_presigned_url('get_object', Params={'Bucket': id, 'Key': image_new_name},
                                            ExpiresIn=100)).split('?')[0]
+    print(image_url)
     return True
 
 
