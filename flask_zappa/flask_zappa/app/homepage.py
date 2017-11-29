@@ -89,8 +89,8 @@ def upload_profile_submit():
     image_type = image.content_type
     print(profile_name)
     print(image)
-    url ='https://s3.amazonaws.com/lambdas3source.people/'+image_name
-    dynamo.update_profiles_table(profile_name,url)
+    
+
     #TODO: Check if there is a face in image
     # If user does not select file, browser also
     # submit a empty part without filename
@@ -123,7 +123,8 @@ def upload_profile_submit():
                                            ExpiresIn=100)).split('?')[0]
 
     print("image url: " + image_url)
-
+    url ='https://s3.amazonaws.com/lambdas3source.people/'+image_new_name
+    dynamo.update_profiles_table(profile_name,url)
     return redirect(url_for('homepage'))
 
 @webapp.route('/query_submit', methods=['POST'])
