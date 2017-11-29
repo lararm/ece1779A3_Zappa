@@ -13,6 +13,7 @@ from wand.image import Image
 from PIL import Image, ImageDraw, ImageFont
 from app import collage
 import json
+import requests
 
 
 
@@ -31,8 +32,8 @@ def upload_image_submit():
     print("#image_submit")
     #collage_test()
 
-    listofimages = ['flower1.jpg', 'flower2.jpg', 'flower3.jpg', 'flower4.jpg', 'flower5.jpg']
-    collage.make_collage(listofimages, 'collage5.jpg',500,450)
+    listofimages = ['flower1.jpg', 'flower2.jpg','flower3.jpg','flower4.jpg','flower5.jpg']
+    collage.make_collage(listofimages, 'collage5.jpg',800,600)
     # Get Session Information
     #username = 'irfan' #escape(session['username'])
 
@@ -76,13 +77,62 @@ def upload_image_submit():
     return redirect(url_for('homepage'))
 
 
+@webapp.route('/upload_profile_submit', methods=['POST'])
+def upload_profile_submit():
+    print("#profile_submit")
+    # collage_test()
+
+    #Get User Input
+    profile_name = request.form['profile_name']
+    image = request.files['profile_image']
+    image_name = image.filename
+    image_type = image.content_type
+    print(profile_name)
+    print(image)
+    url ='https://s3.amazonaws.com/lambdas3source.people/'+image_name
+    dynamo.update_profiles_table(profile_name,url)
+    #TODO: Check if there is a face in image
+    # If user does not select file, browser also
+    # submit a empty part without filename
+    if image_name == '':
+        flash("No image selected for upload.")
+        return redirect(url_for('homepage'))
+
+    # Check image file extension
+    if not valid_image_extension(image_type):
+        flash("%s is not a valid image type. Must be of type [png,gif,jpeg,jpg]." % (image_type))
+        return redirect(url_for('homepage'))
+
+    # Create an S3 client
+    s3 = boto3.client('s3')
+    # s3 = boto3.client('s3')
+    id = 'lambdas3source.people'
+
+    # # Creating unique name
+    timestamp = str(int(time.time()))
+    randomnum = str(random.randint(0, 10000))
+    unique_name = timestamp + "_" + randomnum + "_" + image_name
+
+    # Upload image to S3
+    image_new_name = unique_name
+    s3.upload_fileobj(image,
+                      id,
+                      image_new_name,
+                      ExtraArgs={"Metadata": {"Content-Type": image_type}})
+    image_url = (s3.generate_presigned_url('get_object', Params={'Bucket': id, 'Key': image_new_name},
+                                           ExpiresIn=100)).split('?')[0]
+
+    print("image url: " + image_url)
+
+    return redirect(url_for('homepage'))
+
 @webapp.route('/query_submit', methods=['POST'])
 def query_submit():
     print("#query_submit")
     tags = request.form['query']
 
     image_list = dynamo.query_tag_table(tags)
-
+    print(tags)
     return render_template("homepage.html",image_names=image_list,query=[tags])
 
 @webapp.route('/parse_image', methods=['GET','POST'])
@@ -135,3 +185,18 @@ def draw_retangle():
     source_img.save("retangle.jpg")
 
 
+@webapp.route('/collages', methods=['GET'])
+def make_collage():
+    print("#collage")
+    tags = 'flower'
+    image_list = dynamo.query_tag_table(tags)
+    print(tags)
+
+    url = "https://s3.amazonaws.com/lambdas3source/beach1.jpg"
+    ims3 = Image.open(requests.get(url, stream=True).raw)
+
+    listofimages = [url]#['flower1.jpg', 'flower2.jpg', 'flower3.jpg', 'flower4.jpg', 'flower5.jpg']
+
+    collage.make_collage(listofimages, 'collage5.jpg', 800, 600)
+
+    return render_template("homepage.html",image_names=image_list,query=[tags])

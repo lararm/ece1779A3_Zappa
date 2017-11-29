@@ -60,3 +60,13 @@ def query_image():
         image_list.append(image['image'])
 
     return image_list
+
+def update_profiles_table(name,picture): #FIXME PUT THIS IN WEBSITE
+    response = dynamodb_client.update_item(
+        TableName= "Profiles",
+        Key={"name": {"S":name}},
+        UpdateExpression = 'SET picture = :picture',
+        ExpressionAttributeValues = {":picture" : {"S":picture}},
+        ReturnValues = "ALL_NEW"
+
+    )

@@ -1,23 +1,45 @@
-# -*- coding: utf-8 -*-
-"""
-Collage maker - tool to create picture collages
-Author: Delimitry
-"""
-
 import argparse
 import os
 import random
 from PIL import Image
-
+import requests
+import boto3
 
 def make_collage(images, filename, width, init_height):
     print("#make_collage")
+
     """
     Make a collage image with a width equal to `width` from `images` and save to `filename`.
     """
     if not images:
         print('No images for collage found!')
         return False
+
+    # find smallest width and height
+    width_list = []
+    height_list = []
+    for im in images:
+        # with Image.open(im) as img:
+        with Image.open(requests.get(im, stream=True).raw) as img:
+            width, height = img.size
+            print("collage")
+            print(width)
+            width_list.append(width)
+            height_list.append(height)
+    width_list.sort()
+    height_list.sort()
+
+    min_width = width_list[0]
+    min_height = height_list[0]
+
+    avg_width = sum(width_list) // len(width_list)
+    avg_height = sum(height_list) // len(height_list)
+
+    # print(avg_height, avg_width)
+    # print(min_width,min_height)
+
+    width = avg_width
+    init_height = avg_height
 
     margin_size = 2
     # run until a suitable arrangement of images is found
@@ -30,7 +52,7 @@ def make_collage(images, filename, width, init_height):
         while images_list:
             # get first image and resize to `init_height`
             img_path = images_list.pop(0)
-            img = Image.open(img_path)
+            img = Image.open(requests.get(img_path, stream=True).raw) #Image.open(img_path)
             img.thumbnail((width, init_height))
             # when `x` will go beyond the `width`, start the next line
             if x > width:
@@ -64,11 +86,11 @@ def make_collage(images, filename, width, init_height):
     # put images to the collage
     y = 0
     for coef, imgs_line in coefs_lines:
-        console.log(coef)
+        # console.log(coef)
         if imgs_line:
             x = 0
             for img_path in imgs_line:
-                img = Image.open(img_path)
+                img = Image.open(requests.get(img_path, stream=True).raw) #Image.open(img_path)
                 # if need to enlarge an image - use `resize`, otherwise use `thumbnail`, it's faster
                 k = (init_height / coef) / img.size[1]
                 if k > 1:
@@ -80,6 +102,27 @@ def make_collage(images, filename, width, init_height):
                 x += img.size[0] + margin_size
             y += int(init_height / coef) + margin_size
     collage_image.save(filename)
+
+    #Save collage to S3
+
+    # Create an S3 client
+    s3 = boto3.client('s3')
+    # s3 = boto3.client('s3')
+    id = config.AWS_ID
+
+    # # Creating unique name
+    timestamp = str(int(time.time()))
+    randomnum = str(random.randint(0, 10000))
+    unique_name = timestamp + "_" + randomnum + "_" + image_name
+
+    # Upload image to S3
+    image_new_name = unique_name
+    s3.upload_fileobj(image,
+                      id,
+                      image_new_name,
+                      ExtraArgs={"Metadata": {"Content-Type": image_type}})
+    image_url = (s3.generate_presigned_url('get_object', Params={'Bucket': id, 'Key': image_new_name},
+                                           ExpiresIn=100)).split('?')[0]
     return True
 
 

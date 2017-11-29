@@ -36,13 +36,19 @@
 			  <a href="#">Menu</a>
 			</li>
 			<li>
-			  <a href="#">Dashboard</a>
+			  <a href="/homepage">Dashboard</a>
 			</li>
 			<li>
 			  <a href="#upload_image">Upload Image</a>
 			</li>
-			<li>
-			  <a href="#delete_user">Deactivate Account</a>
+{#			<li>#}
+{#			  <a href="#delete_user">Deactivate Account</a>#}
+{#			</li>#}
+            <li>
+			  <a href="#upload_profile">Upload Profile</a>
+			</li>
+            <li>
+			  <a href="/collages">Collages</a>
 			</li>
 			{% with messages = get_flashed_messages()%}
 			  {% if messages %}
@@ -78,6 +84,16 @@
       <form role = "form" class="form-group" method="post" action="query_submit">
 				  <input type="text" name='query' class="form-control input-normal" placeholder="Search">
       </form>
+
+        <ul class="list-inline">
+        {#<h4>Tags:</h4>#}
+            {% for tag in query %}
+              <li class="list-inline-item"><h4>{{ tag}}</h4></li>
+            {% endfor %}
+        </ul>
+
+
+
 			<div class="container">
 				<div class="row">
 					{% for image_name in image_names %}
@@ -130,18 +146,37 @@
 			     <p></p>
 			 </form>
 		    </div>
-		    <div id="delete_user">
-			 <form class = "form-container" method="post" action="delete_user_submit">
-				<a href="/homepage">
-				    <button type="button" class="close" aria-label="Close">
-					 <span aria-hidden="true">&times;</span>
-				     </button>
+{#		    <div id="delete_user">#}
+{#			 <form class = "form-container" method="post" action="delete_user_submit">#}
+{#				<a href="/homepage">#}
+{#				    <button type="button" class="close" aria-label="Close">#}
+{#					 <span aria-hidden="true">&times;</span>#}
+{#				     </button>#}
+{#				</a>#}
+{#			     <div class="form-group">#}
+{#				<label for="userInputPassword">Password</label>#}
+{#				<input type="password" name='password' class="form-control" placeholder="Password">#}
+{#			     </div>#}
+{#			     <button type="submit" value='delete_myaccount' class="btn btn-danger">Deactivate Account</button>#}
+{#			 </form>#}
+{#		    </div>#}
+            <div id="upload_profile">
+			 <form class="form-container" enctype=multipart/form-data method='post' action='upload_profile_submit'>
+				 <a href="/homepage">
+				 <button type="button" class="close" aria-label="Close">
+				     <span aria-hidden="true">&times;</span>
+				 </button>
 				</a>
-			     <div class="form-group">
-				<label for="userInputPassword">Password</label>
-				<input type="password" name='password' class="form-control" placeholder="Password">
-			     </div>
-			     <button type="submit" value='delete_myaccount' class="btn btn-danger">Deactivate Account</button>
+                 <div>
+			    <label>Profile name:  </label>
+			    <input type='text' name='profile_name'>
+			    </div>
+			    <div>
+			    <label>Image:  </label>
+			    <input type='file' name='profile_image'>
+			    </div>
+			    <input type='submit' value='Upload'class="btn btn-success" >
+			    <p></p>
 			 </form>
 		    </div>
 		</div>

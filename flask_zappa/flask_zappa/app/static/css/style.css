@@ -313,7 +313,9 @@ body {
     position:absolute;
     bottom:0;
 }
-
-
-
-
+#menu ul{
+  list-style: none;
+}
+#menu li{
+  display: inline;
+}
