@@ -99,14 +99,14 @@
 					{% for image_name in image_names %}
 						<div class="col-lg-3 col-md-4 col-xs-6 thumb" id="img">
 						  <div class="thumbnail">
-							  
-									<input type="image" src="{{image_name}}" name="image_name" alt="Lights" style="width:100%" value={{ image_name }}/>
-					
-								<div class="caption">
+							  <form action="image_info" method="post" id="info">
+									<input type="image" src="{{image_name}}" name="image_name" alt="Lights" style="width:100%" value={{image_name}}>
+                              </form>
+                          <div class="caption">
                   
                 </div>
 							</div>
-						</div>
+					 	</div>
 					{% endfor %}
 
 					</div>
@@ -145,20 +145,6 @@
 			     <p></p>
 			 </form>
 		    </div>
-{#		    <div id="delete_user">#}
-{#			 <form class = "form-container" method="post" action="delete_user_submit">#}
-{#				<a href="/homepage">#}
-{#				    <button type="button" class="close" aria-label="Close">#}
-{#					 <span aria-hidden="true">&times;</span>#}
-{#				     </button>#}
-{#				</a>#}
-{#			     <div class="form-group">#}
-{#				<label for="userInputPassword">Password</label>#}
-{#				<input type="password" name='password' class="form-control" placeholder="Password">#}
-{#			     </div>#}
-{#			     <button type="submit" value='delete_myaccount' class="btn btn-danger">Deactivate Account</button>#}
-{#			 </form>#}
-{#		    </div>#}
             <div id="upload_profile">
 			 <form class="form-container" enctype=multipart/form-data method='post' action='upload_profile_submit'>
 				 <a href="/homepage">

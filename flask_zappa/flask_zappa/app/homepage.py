@@ -140,6 +140,22 @@ def upload_profile_submit():
 
     return redirect(url_for('homepage'))
 
+
+
+@webapp.route('/image_info', methods=['GET', 'POST'])
+def image_info():
+    print("#image_info")
+    # Get User Input
+    if request.method == 'GET':
+        return render_template("image.html")
+
+    image_name = request.form['image_name']
+    print(image_name)
+    #image_names = db.get_transforms(username, image_name)
+
+
+    return render_template("image.html", image_name=image_name)
+
 @webapp.route('/query_submit', methods=['POST'])
 def query_submit():
     print("#query_submit")
