@@ -19,6 +19,24 @@ import requests
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
 
+
+@webapp.route('/login', methods=['GET','POST'])
+def login():
+    print("login")
+    return render_template("login.html")
+
+
+@webapp.route('/login_submit', methods=['POST'])
+def login_submit():
+    #Get User Input
+    username = request.form['username']
+    password = request.form['password']
+    # Login
+    if (username == config.LOGIN_USER):
+        return redirect(url_for('homepage'))
+    else:
+        return redirect(url_for('login'))
+
 @webapp.route('/homepage',methods=['GET','POST'])
 def homepage():
     image_list = dynamo.query_image()

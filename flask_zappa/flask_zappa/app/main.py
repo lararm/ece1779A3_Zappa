@@ -7,6 +7,6 @@ import datetime
 
 @webapp.route('/')
 def main():
-    return redirect(url_for('homepage'))
+    return redirect(url_for('login'))
     
 
