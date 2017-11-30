@@ -23,9 +23,14 @@
        </div>
        </div>
        <h1>Image</h1>
-
+    <br>
     <div id="contain"></div>
-          <h4>Tags:</h4>
+          <h3>Tags:</h3>
+            <ul class="list-inline">
+            {% for tag in tags %}
+              <li class="list-inline-item"><b>{{tag}}</b></li>
+            {% endfor %}
+        </ul>
         <img src=" {{image_name}}"  style="height: auto;" alt="" >
     <div class="row">
 

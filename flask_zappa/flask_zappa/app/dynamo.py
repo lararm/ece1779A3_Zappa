@@ -79,3 +79,10 @@ def update_collages_table(name,collage):
         ExpressionAttributeValues = {":collage" : {"S":collage}},
         ReturnValues = "ALL_NEW"
     )
+
+def query_tags(image):
+    response = dynamodb_client.get_item(
+        TableName= "Images",
+        Key={"image": {"S":image}},
+    )
+    return (response['Item']['tags']['SS'])

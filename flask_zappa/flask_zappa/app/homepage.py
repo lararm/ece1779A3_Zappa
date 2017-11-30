@@ -149,12 +149,11 @@ def image_info():
     if request.method == 'GET':
         return render_template("image.html")
 
-    image_name = request.form['image_name']
-    print(image_name)
-    #image_names = db.get_transforms(username, image_name)
+    image_name = 'https://s3.amazonaws.com/lambdas3source/beach1.jpg' #request.form['image_name']
+    tags = dynamo.query_tags(image_name)
+    print(tags)
 
-
-    return render_template("image.html", image_name=image_name)
+    return render_template("image.html", image_name=image_name,tags = tags)
 
 @webapp.route('/query_submit', methods=['POST'])
 def query_submit():
