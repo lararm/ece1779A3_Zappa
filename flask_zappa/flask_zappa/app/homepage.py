@@ -2,7 +2,7 @@ from flask import render_template, session, request, escape, redirect, url_for,f
 from app import webapp
 from app import config
 from app import dynamo
-from app import collage
+#from app import collage
 import datetime
 import os
 import os.path
@@ -10,21 +10,20 @@ import boto3
 import time
 import random
 import re
-from wand.image import Image
-from PIL import Image, ImageDraw, ImageFont
+#from wand.image import Image
+#from PIL import Image, ImageDraw, ImageFont
 import json
 import requests
-
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
 
-
 @webapp.route('/login', methods=['GET','POST'])
 def login():
+    if 'username' in session:
+        return redirect(url_for('homepage'))
     print("login")
     return render_template("login.html")
-
 
 @webapp.route('/login_submit', methods=['POST'])
 def login_submit():
@@ -33,21 +32,33 @@ def login_submit():
     password = request.form['password']
     # Login
     if (username == config.LOGIN_USER):
+        session['username']=username
         return redirect(url_for('homepage'))
     else:
         return redirect(url_for('login'))
 
+@webapp.route('/logout_submit', methods=['POST'])
+def logout_submit():
+    
+    #Get Session Information
+    username = escape(session['username'])
+
+    #Close Session
+    session.pop('username',None)
+    return redirect(url_for('login'))
+
 @webapp.route('/homepage',methods=['GET','POST'])
 def homepage():
+
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
     image_list = dynamo.query_image()
     return render_template("homepage.html",image_names=image_list)
 
 
 @webapp.route('/upload_image_submit', methods=['POST'])
 def upload_image_submit():
-
-    # Get Session Information
-    #username = 'irfan' #escape(session['username'])
 
     # Get User Input
     image = request.files['image']
@@ -87,7 +98,6 @@ def upload_image_submit():
     print("image url: " + image_url )
 
     return redirect(url_for('homepage'))
-
 
 @webapp.route('/upload_profile_submit', methods=['POST'])
 def upload_profile_submit():
@@ -166,18 +176,35 @@ def query_submit():
     print(tags)
     return render_template("homepage.html",image_names=image_list,query=[tags])
 
-@webapp.route('/parse_image', methods=['GET','POST'])
-def parse_image():
+@webapp.route('/collages', methods=['GET'])
+def make_collage():
 
-    with open("face.json") as json_file:
-        response = json.load(json_file)
+    if 'username' not in session:
+        return redirect(url_for('login'))
 
-    for face in response['FaceMatches']:
-        faceMatch = float(face['Similarity'])
-        if ((faceMatch>=70.00) and (faceMatch<=100.0)):
-            print ("I think hes in the image")
+    table = dynamodb.Table("Profiles")
+    profiles = table.scan(
+        ProjectionExpression="#name,picture",
+        ExpressionAttributeNames={"#name": "name"}
+    )
+    #for profile in profiles['Items']:
+    #    name = profile['name']
+    #    image_list = dynamo.query_tag_table(name)
+    #    collage.make_collage(image_list, 'collage5.jpg', 800, 600, name)
 
-    return redirect(url_for('homepage'))
+    #Display collages
+    image_list = []
+    table = dynamodb.Table("Collages")
+    collages = table.scan(
+        ProjectionExpression="#name,collage",
+        ExpressionAttributeNames={"#name": "name"}
+    )
+    response = collages['Items']
+    for collagei in  collages['Items']:
+        image_list.append(collagei['collage'])
+        print(collagei['collage'])
+
+    return render_template("homepage.html",image_names=image_list)
 
 def valid_image_extension(ext):
     for extension in ALLOWED_IMAGE_EXTENSIONS:
@@ -202,45 +229,3 @@ def lambda_handler(event, context):
         print(e)
         print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
         raise e
-
-def draw_retangle():
-    # "BoundingBox": {
-    #     "Width": 0.13733333349227905,
-    #     "Height": 0.20956256985664368,
-    #     "Left": 0.31066668033599854,
-    #     "Top": 0.15157680213451385
-    print("#draw retangle")
-    source_img = Image.open('flower1.jpg')
-    draw = ImageDraw.Draw(source_img)
-    draw.rectangle(((50, 50), (100, 100)),outline = "blue")
-    source_img.save("retangle.jpg")
-
-
-@webapp.route('/collages', methods=['GET'])
-def make_collage():
-
-    table = dynamodb.Table("Profiles")
-    profiles = table.scan(
-        ProjectionExpression="#name,picture",
-        ExpressionAttributeNames={"#name": "name"}
-    )
-    for profile in profiles['Items']:
-        name = profile['name']
-        image_list = dynamo.query_tag_table(name)
-        collage.make_collage(image_list, 'collage5.jpg', 800, 600, name)
-
-    #Display collages
-    image_list = []
-    table = dynamodb.Table("Collages")
-    collages = table.scan(
-        ProjectionExpression="#name,collage",
-        ExpressionAttributeNames={"#name": "name"}
-    )
-    response = collages['Items']
-    for collagei in  collages['Items']:
-        image_list.append(collagei['collage'])
-        print(collagei['collage'])
-
-    return render_template("homepage.html",image_names=image_list)
-
-

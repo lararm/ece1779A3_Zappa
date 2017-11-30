@@ -36,7 +36,7 @@
 			  <a href="#">Menu</a>
 			</li>
 			<li>
-			  <a href="/homepage">Dashboard</a>
+			  <a href="/dev/homepage">Dashboard</a>
 			</li>
 			<li>
 			  <a href="#upload_image">Upload Image</a>
@@ -48,7 +48,7 @@
 			  <a href="#upload_profile">Upload Profile</a>
 			</li>
             <li>
-			  <a href="/collages">Collages</a>
+			  <a href="/dev/collages">Collages</a>
 			</li>
 			{% with messages = get_flashed_messages()%}
 			  {% if messages %}
@@ -59,11 +59,11 @@
 			    {% endfor %}
 			  {% endif %}
 			{% endwith %}
-			<li>
-			  <form class = "form-container" method="post" action="logout_submit">
-				  <button type="submit" value='logout' class="button2">Log out</button>
-			  </form>
-			</li>
+            <li>
+                <form class = "form-container" method="post" action="logout_submit">
+                    <button type="submit" value='logout' class="button2">Log out</button>
+                </form>
+            </li>
 		</ul>
 	</div>
 	<!-- /#sidebar-wrapper -->
@@ -111,11 +111,11 @@
 
 					</div>
 				</div>
-				<!-->
+
 		<div class="target">
 		     <div id="upload_image">
 			 <form class="form-container" enctype=multipart/form-data method='post' action='upload_image_submit'>
-			     <a href="/homepage">
+			     <a href="/dev/homepage">
 				 <button type="button" class="close" aria-label="Close">
 				     <span aria-hidden="true">&times;</span>
 				 </button>
@@ -147,7 +147,7 @@
 		    </div>
             <div id="upload_profile">
 			 <form class="form-container" enctype=multipart/form-data method='post' action='upload_profile_submit'>
-				 <a href="/homepage">
+				 <a href="/dev/homepage">
 				 <button type="button" class="close" aria-label="Close">
 				     <span aria-hidden="true">&times;</span>
 				 </button>
