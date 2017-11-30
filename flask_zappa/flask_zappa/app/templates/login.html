@@ -1,0 +1,55 @@
+<!--
+######################################################################
+# File:		login.html
+# Authors:	Irfan Khan				 999207665
+#		   	Larissa Ribeiro Madeira 1003209173
+# Data: 	October 2017
+# Purpose: 	Login webpage.
+######################################################################
+-->
+<!DOCTYPE html>
+<head>
+    <title>Login</title>
+     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/style.css') }}">
+     <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+     <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+</head>
+<html>
+    <body>
+    <div class="container-fluid bg">
+        <div class="row">
+            <div class="col-md-4 col-sm-4 col-xs-12"></div>
+            <div class="col-md-4 col-sm-4 col-xs-12">
+            <!-- form start-->
+              <form class = "form-container" method="post" action="login_submit">
+              <h1>Login</h1>
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Username</label>
+                    <input type="text" name ='username' class="form-control" placeholder="Username">
+                  </div>
+                  <div class="form-group">
+                    <label for="userInputPassword1">Password</label>
+                    <input type="password" name='password' class="form-control" placeholder="Password">
+                  </div>
+                     <button type="submit" value='login' class="btn btn-success btn-block">Login</button>
+                      <br>
+                      {% with messages = get_flashed_messages()%}
+                        {% if messages %}
+                          {% for message in messages %}
+                            <div class="alert alert-warning">
+                              <strong>Warning! </strong>{{ message}}
+                            </div>
+                          {% endfor %}
+                        {% endif %}
+                      {% endwith %}
+{#                       <p class="box"><span>Not a member?</span>#}
+{#                            <a href="{{ url_for('signup')}}" class="btn btn-link">Sign up</a>#}
+{#                       </p>#}
+                </form>
+            </div>
+            <div class="col-md-4 col-sm-4 col-xs-12"></div>
+            </div>
+        </div>
+    <body>
+</html>
