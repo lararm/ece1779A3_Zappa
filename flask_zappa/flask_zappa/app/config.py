@@ -1,1 +1,1 @@
-AWS_ID = '******'
+AWS_ID = 'lambdas3source'

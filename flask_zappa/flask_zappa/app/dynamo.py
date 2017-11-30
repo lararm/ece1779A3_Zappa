@@ -70,3 +70,12 @@ def update_profiles_table(name,picture): #FIXME PUT THIS IN WEBSITE
         ReturnValues = "ALL_NEW"
 
     )
+
+def update_collages_table(name,collage):
+    response = dynamodb_client.update_item(
+        TableName= 'Collages',
+        Key={'name': {"S":name}},
+        UpdateExpression = 'SET collage= :collage',
+        ExpressionAttributeValues = {":collage" : {"S":collage}},
+        ReturnValues = "ALL_NEW"
+    )

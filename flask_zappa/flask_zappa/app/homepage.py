@@ -2,6 +2,7 @@ from flask import render_template, session, request, escape, redirect, url_for,f
 from app import webapp
 from app import config
 from app import dynamo
+from app import collage
 import datetime
 import os
 import os.path
@@ -11,12 +12,11 @@ import random
 import re
 from wand.image import Image
 from PIL import Image, ImageDraw, ImageFont
-from app import collage
 import json
 import requests
 
 
-
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
 
 @webapp.route('/homepage',methods=['GET','POST'])
@@ -29,11 +29,7 @@ def homepage():
 
 @webapp.route('/upload_image_submit', methods=['POST'])
 def upload_image_submit():
-    print("#image_submit")
-    #collage_test()
 
-    listofimages = ['flower1.jpg', 'flower2.jpg','flower3.jpg','flower4.jpg','flower5.jpg']
-    collage.make_collage(listofimages, 'collage5.jpg',800,600)
     # Get Session Information
     #username = 'irfan' #escape(session['username'])
 
@@ -189,14 +185,28 @@ def draw_retangle():
 @webapp.route('/collages', methods=['GET'])
 def make_collage():
 
+    table = dynamodb.Table("Profiles")
+    profiles = table.scan(
+        ProjectionExpression="#name,picture",
+        ExpressionAttributeNames={"#name": "name"}
+    )
+    for profile in profiles['Items']:
+        name = profile['name']
+        image_list = dynamo.query_tag_table(name)
+        collage.make_collage(image_list, 'collage5.jpg', 800, 600, name)
 
-    #image_list = dynamo.query_tag_table(tags)
-    #Pass list of urls
-    url = "https://s3.amazonaws.com/lambdas3source/beach1.jpg"
-    listofimages = [url]
+    #Display collages
+    image_list = []
+    table = dynamodb.Table("Collages")
+    collages = table.scan(
+        ProjectionExpression="#name,collage",
+        ExpressionAttributeNames={"#name": "name"}
+    )
+    response = collages['Items']
+    for collagei in  collages['Items']:
+        image_list.append(collagei['collage'])
+        print(collagei['collage'])
+
+    return render_template("homepage.html",image_names=image_list)
 
 
-    collage.make_collage(listofimages, 'collage5.jpg', 800, 600)
-
-    #TODO pass images to homepage
-    return render_template("homepage.html")

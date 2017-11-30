@@ -8,6 +8,6 @@ from app import main
 from app import example4
 from app import homepage
 from app import dynamo
-
+from app import collage
 
 

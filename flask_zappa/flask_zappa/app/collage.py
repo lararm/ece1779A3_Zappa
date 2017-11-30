@@ -7,8 +7,9 @@ import boto3
 import time
 import random
 import io
+from app import dynamo
 
-def make_collage(images, filename, width, init_height):
+def make_collage(images, filename, width, init_height, profile_name):
     print("#make_collage")
 
     """
@@ -110,12 +111,11 @@ def make_collage(images, filename, width, init_height):
 
     # Create an S3 client
     s3 = boto3.client('s3')
-    # s3 = boto3.client('s3')
-    id = "lambdas3source"
+    id = "lambdas3source.collages"
     # # Creating unique name
     timestamp = str(int(time.time()))
     randomnum = str(random.randint(0, 10000))
-    unique_name =  timestamp + "_" + randomnum + 'collage.jpg'
+    unique_name = profile_name + '_' + 'collage.jpg'
 
     # Upload image to S3
     image_new_name = unique_name
@@ -123,10 +123,14 @@ def make_collage(images, filename, width, init_height):
     collage_image.save(imgByteArr, format='PNG')
     imgByteArr = imgByteArr.getvalue()
 
-
-    s3.put_object(Body=imgByteArr, Bucket='lambdas3source', Key='collage.jpg')
+    s3.delete_object(Bucket=id, Key=image_new_name)
+    s3.put_object(Body=imgByteArr, Bucket=id, Key=image_new_name)
     image_url = (s3.generate_presigned_url('get_object', Params={'Bucket': id, 'Key': image_new_name},
                                            ExpiresIn=100)).split('?')[0]
+
+    #Add to db
+    dynamo.update_collages_table(profile_name, image_url)
+
     print(image_url)
     return True
 
