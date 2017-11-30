@@ -189,16 +189,15 @@ def draw_retangle():
 
 @webapp.route('/collages', methods=['GET'])
 def make_collage():
-    print("#collage")
-    tags = 'flower'
-    image_list = dynamo.query_tag_table(tags)
-    print(tags)
 
+
+    #image_list = dynamo.query_tag_table(tags)
+    #Pass list of urls
     url = "https://s3.amazonaws.com/lambdas3source/beach1.jpg"
-    ims3 = Image.open(requests.get(url, stream=True).raw)
+    listofimages = [url]
 
-    listofimages = [url]#['flower1.jpg', 'flower2.jpg', 'flower3.jpg', 'flower4.jpg', 'flower5.jpg']
 
     collage.make_collage(listofimages, 'collage5.jpg', 800, 600)
 
-    return render_template("homepage.html",image_names=image_list,query=[tags])
+    #TODO pass images to homepage
+    return render_template("homepage.html")
