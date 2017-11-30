@@ -4,7 +4,7 @@
        "keep_warm": false,
        "debug": true,
        "log_level": "DEBUG",
-       "s3_bucket": "ece1779project3",
+       "s3_bucket": "lambdas3source",
        "app_function": "app.webapp",
        "http_methods": ["GET","POST"],
        "parameter_depth": 1,

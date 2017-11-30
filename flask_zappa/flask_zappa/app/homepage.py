@@ -2,7 +2,7 @@ from flask import render_template, session, request, escape, redirect, url_for,f
 from app import webapp
 from app import config
 from app import dynamo
-from app import collage
+#from app import collage
 import datetime
 import os
 import os.path
@@ -10,8 +10,8 @@ import boto3
 import time
 import random
 import re
-from wand.image import Image
-from PIL import Image, ImageDraw, ImageFont
+#from wand.image import Image
+#from PIL import Image, ImageDraw, ImageFont
 import json
 import requests
 
@@ -133,19 +133,6 @@ def query_submit():
     print(tags)
     return render_template("homepage.html",image_names=image_list,query=[tags])
 
-@webapp.route('/parse_image', methods=['GET','POST'])
-def parse_image():
-
-    with open("face.json") as json_file:
-        response = json.load(json_file)
-
-    for face in response['FaceMatches']:
-        faceMatch = float(face['Similarity'])
-        if ((faceMatch>=70.00) and (faceMatch<=100.0)):
-            print ("I think hes in the image")
-
-    return redirect(url_for('homepage'))
-
 def valid_image_extension(ext):
     for extension in ALLOWED_IMAGE_EXTENSIONS:
         if (ext == extension):
@@ -170,19 +157,6 @@ def lambda_handler(event, context):
         print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
         raise e
 
-def draw_retangle():
-    # "BoundingBox": {
-    #     "Width": 0.13733333349227905,
-    #     "Height": 0.20956256985664368,
-    #     "Left": 0.31066668033599854,
-    #     "Top": 0.15157680213451385
-    print("#draw retangle")
-    source_img = Image.open('flower1.jpg')
-    draw = ImageDraw.Draw(source_img)
-    draw.rectangle(((50, 50), (100, 100)),outline = "blue")
-    source_img.save("retangle.jpg")
-
-
 @webapp.route('/collages', methods=['GET'])
 def make_collage():
 
@@ -191,10 +165,10 @@ def make_collage():
         ProjectionExpression="#name,picture",
         ExpressionAttributeNames={"#name": "name"}
     )
-    for profile in profiles['Items']:
-        name = profile['name']
-        image_list = dynamo.query_tag_table(name)
-        collage.make_collage(image_list, 'collage5.jpg', 800, 600, name)
+    #for profile in profiles['Items']:
+    #    name = profile['name']
+    #    image_list = dynamo.query_tag_table(name)
+    #    collage.make_collage(image_list, 'collage5.jpg', 800, 600, name)
 
     #Display collages
     image_list = []
