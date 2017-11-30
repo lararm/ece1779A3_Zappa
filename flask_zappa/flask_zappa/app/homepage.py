@@ -15,16 +15,15 @@ import re
 import json
 import requests
 
-
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
 
-
 @webapp.route('/login', methods=['GET','POST'])
 def login():
+    if 'username' in session:
+        return redirect(url_for('homepage'))
     print("login")
     return render_template("login.html")
-
 
 @webapp.route('/login_submit', methods=['POST'])
 def login_submit():
@@ -33,21 +32,33 @@ def login_submit():
     password = request.form['password']
     # Login
     if (username == config.LOGIN_USER):
+        session['username']=username
         return redirect(url_for('homepage'))
     else:
         return redirect(url_for('login'))
 
+@webapp.route('/logout_submit', methods=['POST'])
+def logout_submit():
+    
+    #Get Session Information
+    username = escape(session['username'])
+
+    #Close Session
+    session.pop('username',None)
+    return redirect(url_for('login'))
+
 @webapp.route('/homepage',methods=['GET','POST'])
 def homepage():
+
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
     image_list = dynamo.query_image()
     return render_template("homepage.html",image_names=image_list)
 
 
 @webapp.route('/upload_image_submit', methods=['POST'])
 def upload_image_submit():
-
-    # Get Session Information
-    #username = 'irfan' #escape(session['username'])
 
     # Get User Input
     image = request.files['image']
@@ -87,7 +98,6 @@ def upload_image_submit():
     print("image url: " + image_url )
 
     return redirect(url_for('homepage'))
-
 
 @webapp.route('/upload_profile_submit', methods=['POST'])
 def upload_profile_submit():
@@ -151,32 +161,11 @@ def query_submit():
     print(tags)
     return render_template("homepage.html",image_names=image_list,query=[tags])
 
-def valid_image_extension(ext):
-    for extension in ALLOWED_IMAGE_EXTENSIONS:
-        if (ext == extension):
-            return True
-
-    return False
-
-def lambda_handler(event, context):
-    print("#lambda_handler")
-    #print("Received event: " + json.dumps(event, indent=2))
-
-    # Get the object from the event and show its content type
-    bucket = event['Records'][0]['s3']['bucket']['name']
-    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
-    try:
-        response = s3.get_object(Bucket=bucket, Key=key)
-        print("CONTENT TYPE: " + response['ContentType'])
-        print("Key: " + key)
-        return response['ContentType']
-    except Exception as e:
-        print(e)
-        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
-        raise e
-
 @webapp.route('/collages', methods=['GET'])
 def make_collage():
+
+    if 'username' not in session:
+        return redirect(url_for('login'))
 
     table = dynamodb.Table("Profiles")
     profiles = table.scan(
@@ -202,4 +191,26 @@ def make_collage():
 
     return render_template("homepage.html",image_names=image_list)
 
+def valid_image_extension(ext):
+    for extension in ALLOWED_IMAGE_EXTENSIONS:
+        if (ext == extension):
+            return True
 
+    return False
+
+def lambda_handler(event, context):
+    print("#lambda_handler")
+    #print("Received event: " + json.dumps(event, indent=2))
+
+    # Get the object from the event and show its content type
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+    try:
+        response = s3.get_object(Bucket=bucket, Key=key)
+        print("CONTENT TYPE: " + response['ContentType'])
+        print("Key: " + key)
+        return response['ContentType']
+    except Exception as e:
+        print(e)
+        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
+        raise e
