@@ -1,0 +1,3 @@
+/.vscode
+flask_zappa/flask_zappa/venv/
+venv/
