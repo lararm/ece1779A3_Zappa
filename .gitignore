@@ -1,3 +1,4 @@
 /.vscode
-flask_zappa/flask_zappa/venv/
-venv/
+/flask_zappa/flask_zappa/venv/
+/flask_zappa/flask_zappa/venv.bak/
+/venv/
