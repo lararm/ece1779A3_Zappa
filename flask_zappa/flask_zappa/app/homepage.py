@@ -24,7 +24,6 @@ def login():
     """Handles /login route."""
     if 'username' in session:
         return redirect(url_for('homepage'))
-    print("login")
     return render_template("login.html")
 
 @webapp.route('/login_submit', methods=['POST'])
@@ -35,10 +34,9 @@ def login_submit():
     password = request.form['password']
 
     # Login
-    if username == config.LOGIN_USER:
+    if dynamo.login_user(username, password):
         session['username'] = username
         return redirect(url_for('homepage'))
-
     return redirect(url_for('login'))
 
 @webapp.route('/signup', methods=['GET', 'POST'])
@@ -57,7 +55,7 @@ def signup_submit():
     password = request.form['password']
 
 	#Add User
-    if dynamo.query_user(username, password):
+    if dynamo.add_user(username, password):
         session['username'] = request.form['username']
         return redirect(url_for('homepage'))
     return redirect(url_for('signup'))
@@ -205,7 +203,7 @@ def query_submit():
 
 @webapp.route('/collages', methods=['GET'])
 def make_collage():
-    """Hanldes collages route."""
+    """Handles collages route."""
     if 'username' not in session:
         return redirect(url_for('login'))
 
