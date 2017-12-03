@@ -21,7 +21,7 @@ TAG_MATCH_THRESHOLD = 70.00 # We can adjust this confidence factor
 
 def get_username(image):
     """Gets the username from the Image table"""
-    user = DYNAMODB_CLI.query(TableName="Images_2",
+    user = DYNAMODB_CLI.query(TableName="Images",
                               Select="ALL_ATTRIBUTES",
                               IndexName="image-index",
                               KeyConditionExpression="image = :image",
@@ -32,7 +32,7 @@ def get_username(image):
 
 def update_images_faces(username, image, faces):
     """Updates images table boolean attribute faces"""
-    response = DYNAMODB_CLI.update_item(TableName='Images_2',
+    response = DYNAMODB_CLI.update_item(TableName='Images',
                                         Key={'username': {"S":username},'image': {"S":image}},
                                         UpdateExpression='SET faces = :face',
                                         ExpressionAttributeValues={":face" : {"BOOL":faces}},
@@ -41,7 +41,7 @@ def update_images_faces(username, image, faces):
 
 def update_tags_table(username, tag, image):
     """Adds labels to the tags table"""
-    DYNAMODB_CLI.put_item(TableName="Tags_2",
+    DYNAMODB_CLI.put_item(TableName="Tags",
                           Item={'tag':{"S":tag},
                                 'image':{"S":image},
                                 'username':{"S":username}})
@@ -50,7 +50,7 @@ def update_tags_table(username, tag, image):
 def query_profiles(username):
     """Queries for all profiles belonging to a user"""
 
-    table = DYNAMODB_RSC.Table("Profiles_2")
+    table = DYNAMODB_RSC.Table("Profiles")
     response = table.query(ProjectionExpression="profilename,image",
                           KeyConditionExpression=Key('username').eq(username))
 

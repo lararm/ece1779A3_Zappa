@@ -86,7 +86,7 @@ def login_user(username, password):
 
 def add_new_image(username, image):
     """Adds a new image to the Image table"""
-    response = dynamodb_client().put_item(TableName='Images_2',
+    response = dynamodb_client().put_item(TableName='Images',
                                           Item={'username':{"S":username},
                                                 'image':{"S":image}})
 
@@ -111,7 +111,7 @@ def query_tag_table(username, tags):
 
 def query_tag(username, tag):
     """Queries the Tags table for all images that are tagged with the argument tag for user"""
-    response = dynamodb_client().query(TableName="Tags_2",
+    response = dynamodb_client().query(TableName="Tags",
                                        ProjectionExpression="image",
                                        IndexName="tag-username-index",
                                        KeyConditionExpression="tag = :tag AND username = :username",
@@ -123,7 +123,7 @@ def query_tag(username, tag):
         images.append(item['image']['S'])
 
     while 'LastEvaluatedKey' in response:
-        response = dynamodb_client().query(TableName="Tags_2",
+        response = dynamodb_client().query(TableName="Tags",
                                            ProjectionExpression="image",
                                            IndexName="tag-username-index",
                                            KeyConditionExpression="tag = :tag AND username = :username",
@@ -137,7 +137,7 @@ def query_tag(username, tag):
 def query_image(username):
     """Queries the Images table for all images for a user"""
 
-    table = dynamodb_resource().Table('Images_2')
+    table = dynamodb_resource().Table('Images')
     response = table.query(ProjectionExpression="#user, image",
                            ExpressionAttributeNames={"#user": "username"},
                            KeyConditionExpression=Key('username').eq(username))
@@ -159,14 +159,14 @@ def query_image(username):
 
 def update_profiles_table(username, profilename, image):
     """Adds a new entry the Profiles table for all profileS"""
-    dynamodb_client().put_item(TableName="Profiles_2",
+    dynamodb_client().put_item(TableName="Profiles",
                                Item={'profilename':{"S":profilename},
                                      'image':{"S":image},
                                      'username':{"S":username}})
 
 def get_image_tags(username, image):
     """Queries the Tags table for all tags associated with this image"""
-    response = dynamodb_client().query(TableName="Tags_2",
+    response = dynamodb_client().query(TableName="Tags",
                                        ProjectionExpression="tag",
                                        IndexName="image-username-index",
                                        KeyConditionExpression="image = :image AND username = :username",
@@ -178,7 +178,7 @@ def get_image_tags(username, image):
         tags.append(item['tag']['S'])
 
     while 'LastEvaluatedKey' in response:
-        response = dynamodb_client().query(TableName="Tags_2",
+        response = dynamodb_client().query(TableName="Tags",
                                            ProjectionExpression="tag",
                                            IndexName="image-username-index",
                                            KeyConditionExpression="image = :image AND username = :username",
@@ -189,10 +189,10 @@ def get_image_tags(username, image):
 
     return tags
 
-def query_profiles(username): #FIXME
+def query_profiles(username):
     """Returns list of all profiles."""
 
-    table = dynamodb_resource().Table("Profiles_2")
+    table = dynamodb_resource().Table("Profiles")
     response = table.query(ProjectionExpression="profilename,image",
                           KeyConditionExpression=Key('username').eq(username))
 

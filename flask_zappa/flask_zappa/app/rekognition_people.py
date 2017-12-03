@@ -20,7 +20,7 @@ FACE_MATCH_THRESHOLD = 70.00 # We can adjust this confidence factor
 
 def get_username(image):
     """Gets the username from the Profiles table"""
-    user = DYNAMODB_CLI.query(TableName="Profiles_2",
+    user = DYNAMODB_CLI.query(TableName="Profiles",
                               Select="ALL_ATTRIBUTES",
                               IndexName="image-index",
                               KeyConditionExpression="image = :image",
@@ -31,7 +31,7 @@ def get_username(image):
 
 def get_profilename(image):
     """Gets the profilename from the Profiles table"""
-    profile = DYNAMODB_CLI.query(TableName="Profiles_2",
+    profile = DYNAMODB_CLI.query(TableName="Profiles",
                                  Select="ALL_ATTRIBUTES",
                                  IndexName="image-index",
                                  KeyConditionExpression="image = :image",
@@ -55,7 +55,7 @@ def detect_new_profile(src_bucket, src_key, tgt_bucket, tgt_key):
 
 def query_images(username):
     """Retrieves all images for a user that have a face in them"""
-    table = DYNAMODB_RSC.Table('Images_2')
+    table = DYNAMODB_RSC.Table('Images')
     response = table.query(ProjectionExpression="image,faces",
                            FilterExpression="faces = :face",
                            ExpressionAttributeValues={':face':True},
@@ -79,7 +79,7 @@ def query_images(username):
 def update_tags_table(username, tag, image):
     """Adds labels to the tags table"""
     response = DYNAMODB_CLI.put_item(
-        TableName="Tags_2",
+        TableName="Tags",
         Item={'tag':{"S":tag},
               'image':{"S":image},
               'username':{"S":username}}
