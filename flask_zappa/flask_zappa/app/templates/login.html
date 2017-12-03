@@ -22,12 +22,14 @@
 <html>
     <body>
     <div class="container-fluid bg">
+        <h1 class="h1title">Auto Tagging Photo Album</h1>
+
         <div class="row">
             <div class="col-md-4 col-sm-4 col-xs-12"></div>
             <div class="col-md-4 col-sm-4 col-xs-12">
             <!-- form start-->
               <form class = "form-container" method="post" action="login_submit">
-              <h1>Login</h1>
+              <h1 class="login_text">Login</h1>
                   <div class="form-group">
                     <label for="exampleInputEmail1">Username</label>
                     <input type="text" name ='username' class="form-control" placeholder="Username">
@@ -47,9 +49,9 @@
                           {% endfor %}
                         {% endif %}
                       {% endwith %}
-    {#                       <p class="box"><span>Not a member?</span>#}
-    {#                            <a href="{{ url_for('signup')}}" class="btn btn-link">Sign up</a>#}
-    {#                       </p>#}
+                  <p class="box"><span>Not a member?</span>
+                      <a href="{{ url_for('signup')}}" class="btn btn-link">Sign up</a>
+                  </p>
                 </form>
             </div>
             <div class="col-md-4 col-sm-4 col-xs-12"></div>
