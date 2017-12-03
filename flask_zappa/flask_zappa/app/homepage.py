@@ -1,72 +1,96 @@
-from flask import render_template, session, request, escape, redirect, url_for,flash
-from app import webapp
-from app import config
-from app import dynamo
-#from app import collage
-import datetime
-import os
-import os.path
-import boto3
+"""
+File:     homepage.py
+Authors:  Irfan Khan 999207665, Larissa Ribeiro Madeira 1003209173
+Date:     November 2017
+Purpose:  Webpage Routes
+"""
 import time
 import random
-import re
+import boto3
+from flask import render_template, session, request, escape, redirect, url_for, flash
+from app import webapp
+from app import dynamo
+from app import config
+#from app import collage
 #from wand.image import Image
 #from PIL import Image, ImageDraw, ImageFont
-import json
-import requests
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-ALLOWED_IMAGE_EXTENSIONS = set(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
+def dynamodb_resource():
+    """Returns a dynamodb resource."""
+    return boto3.resource('dynamodb', region_name='us-east-1')
 
-@webapp.route('/login', methods=['GET','POST'])
+@webapp.route('/login', methods=['GET', 'POST'])
 def login():
+    """Handles /login route."""
     if 'username' in session:
         return redirect(url_for('homepage'))
-    print("login")
     return render_template("login.html")
 
 @webapp.route('/login_submit', methods=['POST'])
 def login_submit():
+    """Handles /login_submit route."""
     #Get User Input
     username = request.form['username']
     password = request.form['password']
+
     # Login
-    if (username == config.LOGIN_USER):
-        session['username']=username
+    if dynamo.login_user(username, password):
+        session['username'] = username
         return redirect(url_for('homepage'))
-    else:
-        return redirect(url_for('login'))
+    return redirect(url_for('login'))
+
+@webapp.route('/signup', methods=['GET', 'POST'])
+def signup():
+    """Handles singup route."""
+    if 'username' in session:
+        print("Session user is: %s" % escape(session['username']))
+        return redirect(url_for('homepage'))
+    return render_template("signup.html")
+
+@webapp.route('/signup_submit', methods=['POST'])
+def signup_submit():
+    """Handles signup_submit route."""
+	#Get User Input
+    username = request.form['username']
+    password = request.form['password']
+
+	#Add User
+    if dynamo.add_user(username, password):
+        session['username'] = request.form['username']
+        return redirect(url_for('homepage'))
+    return redirect(url_for('signup'))
 
 @webapp.route('/logout_submit', methods=['POST'])
 def logout_submit():
-    
+    """Handles /logout_submit route."""
+
     #Get Session Information
     username = escape(session['username'])
+    print("Logging " + username + " out")
 
     #Close Session
-    session.pop('username',None)
+    session.pop('username', None)
     return redirect(url_for('login'))
 
-@webapp.route('/homepage',methods=['GET','POST'])
+@webapp.route('/homepage', methods=['GET', 'POST'])
 def homepage():
-
+    """Handles /homepage route."""
     if 'username' not in session:
         return redirect(url_for('login'))
 
     image_list = dynamo.query_image()
-    return render_template("homepage.html",image_names=image_list)
+    return render_template("homepage.html", image_names=image_list)
 
 
 @webapp.route('/upload_image_submit', methods=['POST'])
 def upload_image_submit():
-
+    """Handles upload_image_submit route."""
     # Get User Input
     image = request.files['image']
     image_name = image.filename
     image_type = image.content_type
 
-    # If user does not select file, browser also
-    # submit a empty part without filename
+    # If no image name redirect to homepage
     if image_name == '':
         flash("No image selected for upload.")
         return redirect(url_for('homepage'))
@@ -77,30 +101,31 @@ def upload_image_submit():
         return redirect(url_for('homepage'))
 
     # Create an S3 client
-    s3 = boto3.client('s3')
-    # s3 = boto3.client('s3')
-    id = config.AWS_ID
+    storage = boto3.client('s3')
+    storage_id = config.AWS_ID
 
     # # Creating unique name
     timestamp = str(int(time.time()))
     randomnum = str(random.randint(0, 10000))
     unique_name = timestamp + "_" + randomnum + "_" + image_name
-    
+
     # Upload image to S3
     image_new_name = unique_name
-    s3.upload_fileobj(image,
-                      id,
-                      image_new_name,
-                      ExtraArgs={"Metadata": {"Content-Type": image_type}})
-    image_url = (s3.generate_presigned_url('get_object', Params={'Bucket': id, 'Key': image_new_name},
-                                           ExpiresIn=100)).split('?')[0]
+    storage.upload_fileobj(image,
+                           storage_id,
+                           image_new_name,
+                           ExtraArgs={"Metadata": {"Content-Type": image_type}})
+    image_url = (storage.generate_presigned_url('get_object',
+                                                Params={'Bucket': storage_id, 'Key':image_new_name},
+                                                ExpiresIn=100)).split('?')[0]
 
-    print("image url: " + image_url )
+    print("image url: " + image_url)
 
     return redirect(url_for('homepage'))
 
 @webapp.route('/upload_profile_submit', methods=['POST'])
 def upload_profile_submit():
+    """Handles upload_profile_submit route."""
     print("#profile_submit")
     # collage_test()
 
@@ -111,9 +136,8 @@ def upload_profile_submit():
     image_type = image.content_type
     print(profile_name)
     print(image)
-    
 
-    #TODO: Check if there is a face in image
+    #Check if there is a face in image FIXME
     # If user does not select file, browser also
     # submit a empty part without filename
     if image_name == '':
@@ -126,9 +150,8 @@ def upload_profile_submit():
         return redirect(url_for('homepage'))
 
     # Create an S3 client
-    s3 = boto3.client('s3')
-    # s3 = boto3.client('s3')
-    id = 'lambdas3source.people'
+    storage = boto3.client('s3')
+    storage_id = 'lambdas3source.people'
 
     # # Creating unique name
     timestamp = str(int(time.time()))
@@ -137,24 +160,25 @@ def upload_profile_submit():
 
     # Upload image to S3
     image_new_name = unique_name
-    s3.upload_fileobj(image,
-                      id,
-                      image_new_name,
-                      ExtraArgs={"Metadata": {"Content-Type": image_type}})
-    image_url = (s3.generate_presigned_url('get_object', Params={'Bucket': id, 'Key': image_new_name},
-                                           ExpiresIn=100)).split('?')[0]
+    storage.upload_fileobj(image,
+                           storage_id,
+                           image_new_name,
+                           ExtraArgs={"Metadata": {"Content-Type": image_type}})
+    image_url = (storage.generate_presigned_url('get_object',
+                                                Params={'Bucket': storage_id,
+                                                        'Key': image_new_name},
+                                                ExpiresIn=100)).split('?')[0]
 
     print("image url: " + image_url)
-    url ='https://s3.amazonaws.com/lambdas3source.people/'+image_new_name
-    dynamo.update_profiles_table(profile_name,url)
+    url = 'https://s3.amazonaws.com/lambdas3source.people/' + image_new_name
+    dynamo.update_profiles_table(profile_name, url)
 
     return redirect(url_for('homepage'))
 
-
-
 @webapp.route('/image_info', methods=['GET', 'POST'])
 def image_info():
-    print("#image_info")
+    """Handles image_info route."""
+
     # Get User Input
     if request.method == 'GET':
         return render_template("image.html")
@@ -163,27 +187,28 @@ def image_info():
     tags = dynamo.query_tags(image_name)
     print(tags)
 
-    return render_template("image.html", image_name=image_name,tags = tags)
+    return render_template("image.html", image_name=image_name, tags=tags)
 
 
 @webapp.route('/query_submit', methods=['POST'])
 def query_submit():
-    print("#query_submit")
+    """Handles query_submit route."""
+
     tags = request.form['query']
 
-    if (len(tags) == 0):
+    if not tags:
         return redirect(url_for('homepage'))
     image_list = dynamo.query_tag_table(tags)
     print(tags)
-    return render_template("homepage.html",image_names=image_list,query=[tags])
+    return render_template("homepage.html", image_names=image_list, query=[tags])
 
 @webapp.route('/collages', methods=['GET'])
 def make_collage():
-
+    """Handles collages route."""
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    table = dynamodb.Table("Profiles")
+    table = dynamodb_resource().Table("Profiles")
     profiles = table.scan(
         ProjectionExpression="#name,picture",
         ExpressionAttributeNames={"#name": "name"}
@@ -195,7 +220,7 @@ def make_collage():
 
     #Display collages
     image_list = []
-    table = dynamodb.Table("Collages")
+    table = dynamodb_resource().Table("Collages")
     collages = table.scan(
         ProjectionExpression="#name,collage",
         ExpressionAttributeNames={"#name": "name"}
@@ -205,38 +230,46 @@ def make_collage():
         image_list.append(collagei['collage'])
         print(collagei['collage'])
 
-    return render_template("homepage.html",image_names=image_list)
+    return render_template("homepage.html", image_names=image_list)
 
 def valid_image_extension(ext):
-    for extension in ALLOWED_IMAGE_EXTENSIONS:
-        if (ext == extension):
+    """Determines if image is of a valid extension"""
+    allowed_image_extensions = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif']
+
+    for extension in allowed_image_extensions:
+        if ext == extension:
             return True
 
     return False
-
-def lambda_handler(event, context):
-    print("#lambda_handler")
-    #print("Received event: " + json.dumps(event, indent=2))
-
-    # Get the object from the event and show its content type
-    bucket = event['Records'][0]['s3']['bucket']['name']
-    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
-    try:
-        response = s3.get_object(Bucket=bucket, Key=key)
-        print("CONTENT TYPE: " + response['ContentType'])
-        print("Key: " + key)
-        return response['ContentType']
-    except Exception as e:
-        print(e)
-        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
-        raise e
-
-@webapp.route('/signup_submit', methods=['POST'])
-def signup_submit():
-    return redirect(url_for('signup'))
 
 @webapp.route('/signup', methods=['GET','POST'])
 def signup():
 	return render_template("signup.html")
 
-
+# <<<<<<< HEAD #TODO do we need this lambda_handler? add endpoints for signup submit
+#
+# def lambda_handler(event, context):
+#     print("#lambda_handler")
+#     #print("Received event: " + json.dumps(event, indent=2))
+#
+#     # Get the object from the event and show its content type
+#     bucket = event['Records'][0]['s3']['bucket']['name']
+#     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+#     try:
+#         response = s3.get_object(Bucket=bucket, Key=key)
+#         print("CONTENT TYPE: " + response['ContentType'])
+#         print("Key: " + key)
+#         return response['ContentType']
+#     except Exception as e:
+#         print(e)
+#         print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
+#         raise e
+#
+# @webapp.route('/signup_submit', methods=['POST'])
+# def signup_submit():
+#     return redirect(url_for('signup'))
+#
+#
+#
+# =======
+# >>>>>>> c18fd9ced68265aa0fd9518a3b9fdf505b205101
