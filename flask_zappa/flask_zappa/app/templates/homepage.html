@@ -36,7 +36,7 @@
 			  <a href="#">Menu</a>
 			</li>
 			<li>
-			  <a href="/dev/homepage">Dashboard</a>
+			  <a href="/dev2/homepage">Dashboard</a>
 			</li>
 			<li>
 			  <a href="#upload_image">Upload Image</a>
@@ -47,8 +47,11 @@
             <li>
 			  <a href="#upload_profile">Upload Profile</a>
 			</li>
+{#            <li>#}
+{#			  <a href="/dev2/collages">Collages</a>#}
+{#			</li>#}
             <li>
-			  <a href="/dev/collages">Collages</a>
+			  <a href="/dev2/profiles">Profiles</a>
 			</li>
 			{% with messages = get_flashed_messages()%}
 			  {% if messages %}
@@ -115,7 +118,7 @@
 		<div class="target">
 		     <div id="upload_image">
 			 <form class="form-container" enctype=multipart/form-data method='post' action='upload_image_submit'>
-			     <a href="/dev/homepage">
+			     <a href="/dev2/homepage">
 				 <button type="button" class="close" aria-label="Close">
 				     <span aria-hidden="true">&times;</span>
 				 </button>
@@ -147,7 +150,7 @@
 		    </div>
             <div id="upload_profile">
 			 <form class="form-container" enctype=multipart/form-data method='post' action='upload_profile_submit'>
-				 <a href="/dev/homepage">
+				 <a href="/dev2/homepage">
 				 <button type="button" class="close" aria-label="Close">
 				     <span aria-hidden="true">&times;</span>
 				 </button>

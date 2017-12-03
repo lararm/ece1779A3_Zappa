@@ -14,10 +14,6 @@ from app import config
 #from wand.image import Image
 #from PIL import Image, ImageDraw, ImageFont
 
-def dynamodb_resource():
-    """Returns a dynamodb resource."""
-    return boto3.resource('dynamodb', region_name='us-east-1')
-
 @webapp.route('/login', methods=['GET', 'POST'])
 def login():
     """Handles /login route."""
@@ -82,7 +78,6 @@ def homepage():
     username = escape(session['username'])
     image_list = dynamo.query_image(username)
     return render_template("homepage.html", image_names=image_list)
-
 
 @webapp.route('/upload_image_submit', methods=['POST'])
 def upload_image_submit():
@@ -203,6 +198,22 @@ def query_submit():
     image_list = dynamo.query_tag_table(username, tags)
     print(tags)
     return render_template("homepage.html", image_names=image_list, query=[tags])
+
+@webapp.route('/profiles', methods=['GET'])
+def query_profiles(): #FIXME move database call to to dynamo
+    """Returns list of all profiles"""
+    table = dynamo.dynamodb_resource().Table("Profiles")
+    profiles = table.scan(
+        ProjectionExpression="#name,picture",
+        ExpressionAttributeNames={"#name": "name"}
+    )
+    profile_dictionary = {}
+    for profile in profiles['Items']:
+        name = profile['name']
+        picture = profile['picture']
+        profile_dictionary[name] = picture
+
+    return render_template("profiles.html", dict=profile_dictionary)
 
 def valid_image_extension(ext):
     """Determines if image is of a valid extension"""
