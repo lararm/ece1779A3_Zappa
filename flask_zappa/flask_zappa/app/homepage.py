@@ -1,11 +1,8 @@
 """
-###########################################################
-# File:     dynamo.py
-# Authors:  Irfan Khan               999207665
-#           Larissa Ribeiro Madeira 1003209173
-# Date:     November 2017
-# Purpose:  Webpage Routes
-###########################################################
+File:     homepage.py
+Authors:  Irfan Khan 999207665, Larissa Ribeiro Madeira 1003209173
+Date:     November 2017
+Purpose:  Webpage Routes
 """
 import time
 import random
@@ -44,9 +41,30 @@ def login_submit():
 
     return redirect(url_for('login'))
 
+@webapp.route('/signup', methods=['GET', 'POST'])
+def signup():
+    """Handles singup route."""
+    if 'username' in session:
+        print("Session user is: %s" % escape(session['username']))
+        return redirect(url_for('homepage'))
+    return render_template("signup.html")
+
+@webapp.route('/signup_submit', methods=['POST'])
+def signup_submit():
+    """Handles signup_submit route."""
+	#Get User Input
+    username = request.form['username']
+    password = request.form['password']
+
+	#Add User
+    if dynamo.query_user(username, password):
+        session['username'] = request.form['username']
+        return redirect(url_for('homepage'))
+    return redirect(url_for('signup'))
+
 @webapp.route('/logout_submit', methods=['POST'])
 def logout_submit():
-    """Handles /logout_submit route"""
+    """Handles /logout_submit route."""
 
     #Get Session Information
     username = escape(session['username'])
@@ -58,7 +76,7 @@ def logout_submit():
 
 @webapp.route('/homepage', methods=['GET', 'POST'])
 def homepage():
-    """Handles /homepage route"""
+    """Handles /homepage route."""
     if 'username' not in session:
         return redirect(url_for('login'))
 
@@ -68,7 +86,7 @@ def homepage():
 
 @webapp.route('/upload_image_submit', methods=['POST'])
 def upload_image_submit():
-    """Handles upload_image_submit route"""
+    """Handles upload_image_submit route."""
     # Get User Input
     image = request.files['image']
     image_name = image.filename
@@ -161,7 +179,7 @@ def upload_profile_submit():
 
 @webapp.route('/image_info', methods=['GET', 'POST'])
 def image_info():
-    """Handles image_info route"""
+    """Handles image_info route."""
 
     # Get User Input
     if request.method == 'GET':
@@ -175,7 +193,7 @@ def image_info():
 
 @webapp.route('/query_submit', methods=['POST'])
 def query_submit():
-    """Handles query_submit route"""
+    """Handles query_submit route."""
 
     tags = request.form['query']
 
@@ -187,7 +205,7 @@ def query_submit():
 
 @webapp.route('/collages', methods=['GET'])
 def make_collage():
-    """Hanldes collages route"""
+    """Hanldes collages route."""
     if 'username' not in session:
         return redirect(url_for('login'))
 

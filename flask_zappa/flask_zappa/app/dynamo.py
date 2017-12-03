@@ -1,11 +1,8 @@
 """
-###########################################################
-# File:     dynamo.py
-# Authors:  Irfan Khan               999207665
-#           Larissa Ribeiro Madeira 1003209173
-# Date:     November 2017
-# Purpose:  DynamoDB Queries
-###########################################################
+File:     dynamo.py
+Authors:  Irfan Khan 999207665, Larissa Ribeiro Madeira 1003209173
+Date:     November 2017
+Purpose:  DynamoDB Queries
 """
 import boto3
 
@@ -20,6 +17,12 @@ def dynamodb_client():
 def intersect(list_a, list_b):
     """Converts input lists into sets, finds their intersection, and returns the resulting list"""
     return list(set(list_a) & set(list_b))
+
+def query_user(user, password):
+    """Determines if username is available and adds it to the user table if possible"""
+    print(user)
+    print(password)
+    return False #Need to add query to user table here FIXME
 
 def query_tag_table(tags):
     """Queries the database for images that contain all tags provided in the argument tags"""
@@ -43,12 +46,11 @@ def query_tag(tag): #Need to make this a query in the image table FIXME
     response = dynamodb_client().query(TableName="Tags",
                                        Select="ALL_ATTRIBUTES",
                                        KeyConditionExpression="tag = :tagName",
-                                       WWExpressionAttributeValues={":tagName":{"S":tag}})
+                                       ExpressionAttributeValues={":tagName":{"S":tag}})
 
     if not response["Items"]:
         return []
     return response["Items"][0]["images"]['SS']
-
 
 def query_image():
     """Quereies the Images table for all images"""
