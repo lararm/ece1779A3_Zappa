@@ -242,6 +242,21 @@ def valid_image_extension(ext):
 
     return False
 
+@webapp.route('/profiles', methods=['GET'])
+def query_profiles():
+    table = dynamodb_resource().Table("Profiles")
+    profiles = table.scan(
+        ProjectionExpression="#name,picture",
+        ExpressionAttributeNames={"#name": "name"}
+    )
+    aDict = {}
+    for profile in profiles['Items']:
+        name = profile['name']
+        picture = profile['picture']
+        aDict[name] = picture
+
+    return render_template("profiles.html", dict =aDict)
+
 # <<<<<<< HEAD #TODO do we need this lambda_handler?
 #
 # def lambda_handler(event, context):
