@@ -16,10 +16,9 @@
   </head>
   <body>
    <div class="container-fluid">
-                {#  TO DO:#}
      <div class="row">
       <div class="col-lg-12">
-          <a class="pull-right btn btn-primary" href="/homepage" id="home-page">☰</a>
+          <a class="pull-right btn btn-primary" href="/dev/homepage" id="home-page">☰</a>
        </div>
        </div>
        <h1>Collages</h1>
@@ -28,7 +27,9 @@
 
     <div class="row">
             {% for collage_name in collages_names %}
+                 <form action="image_info" method="post" id="info">
                    <img src=" {{collage_name}}"  style="height: auto;" alt="" >
+                 </form>
             {% endfor %}
           </div>
         </div>

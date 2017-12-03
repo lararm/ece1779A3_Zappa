@@ -159,11 +159,12 @@ def image_info():
     if request.method == 'GET':
         return render_template("image.html")
 
-    image_name = 'https://s3.amazonaws.com/lambdas3source/beach1.jpg' #request.form['image_name']
+    image_name = request.form['image_name']
     tags = dynamo.query_tags(image_name)
     print(tags)
 
     return render_template("image.html", image_name=image_name,tags = tags)
+
 
 @webapp.route('/query_submit', methods=['POST'])
 def query_submit():
@@ -229,5 +230,13 @@ def lambda_handler(event, context):
         print(e)
         print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
         raise e
+
+@webapp.route('/signup_submit', methods=['POST'])
+def signup_submit():
+    return redirect(url_for('signup'))
+
+@webapp.route('/signup', methods=['GET','POST'])
+def signup():
+	return render_template("signup.html")
 
 
