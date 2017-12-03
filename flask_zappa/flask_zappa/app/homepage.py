@@ -154,7 +154,7 @@ def upload_profile_submit():
     timestamp = str(int(time.time()))
     randomnum = str(random.randint(0, 10000))
     unique_name = timestamp + "_" + randomnum + "_" + image_name
-    
+
     # Upload Image to Database
     url = 'https://s3.amazonaws.com/lambdas3source.people/' + unique_name
     dynamo.update_profiles_table(username, profile_name, url)

@@ -14,7 +14,7 @@ DYNAMODB_RSC = boto3.resource('dynamodb', region_name='us-east-1')
 DYNAMODB_CLI = boto3.client('dynamodb', region_name='us-east-1')
 
 # --------------- Configuration Settigns -------------------------------------
-FACE_MATCH_THRESHOLD = 70.00 # We can adjust this confidence factor
+FACE_MATCH_THRESHOLD = 80.00 # We can adjust this confidence factor
 
 # --------------- Helper Functions to call Rekognition APIs ------------------
 
