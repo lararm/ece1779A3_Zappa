@@ -101,6 +101,7 @@ def upload_image_submit():
     # Create an S3 client
     storage = boto3.client('s3')
     storage_id = config.AWS_ID
+    storage_path = "https://s3.amazonaws.com/lambdas3source/"
 
     # Creating unique name
     timestamp = str(int(time.time()))
@@ -108,7 +109,7 @@ def upload_image_submit():
     unique_name = timestamp + "_" + randomnum + "_" + image_name
 
     # Add image to the Database
-    dynamo.add_new_image(username, unique_name)
+    dynamo.add_new_image(username, storage_path + unique_name)
 
     # Upload image to S3
     image_new_name = unique_name
@@ -181,7 +182,7 @@ def image_info():
 
     username = escape(session['username'])
     image_name = request.form['image_name']
-    tags = dynamo.query_tags(username, image_name)
+    tags = dynamo.get_image_tags(username, image_name)
     print(tags)
 
     return render_template("image.html", image_name=image_name, tags=tags)
@@ -200,18 +201,11 @@ def query_submit():
     return render_template("homepage.html", image_names=image_list, query=[tags])
 
 @webapp.route('/profiles', methods=['GET'])
-def query_profiles(): #FIXME move database call to to dynamo
+def query_profiles():
     """Returns list of all profiles"""
-    table = dynamo.dynamodb_resource().Table("Profiles")
-    profiles = table.scan(
-        ProjectionExpression="#name,picture",
-        ExpressionAttributeNames={"#name": "name"}
-    )
-    profile_dictionary = {}
-    for profile in profiles['Items']:
-        name = profile['name']
-        picture = profile['picture']
-        profile_dictionary[name] = picture
+
+    username = escape(session['username'])
+    profile_dictionary = dynamo.query_profiles(username)
 
     return render_template("profiles.html", dict=profile_dictionary)
 
