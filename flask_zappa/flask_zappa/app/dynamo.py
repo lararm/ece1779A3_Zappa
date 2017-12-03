@@ -157,11 +157,11 @@ def query_image(username):
 
     return image_list
 
-def update_profiles_table(username, profilename, picture):
+def update_profiles_table(username, profilename, image):
     """Adds a new entry the Profiles table for all profileS"""
     dynamodb_client().put_item(TableName="Profiles_2",
                                Item={'profilename':{"S":profilename},
-                                     'picture':{"S":picture},
+                                     'image':{"S":image},
                                      'username':{"S":username}})
 
 def get_image_tags(username, image):
