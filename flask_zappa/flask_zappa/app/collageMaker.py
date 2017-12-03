@@ -9,12 +9,8 @@ import random
 import io
 from app import dynamo
 
-def make_collage(images, filename, width, init_height, profile_name):
-    print("#make_collage")
+def make_collage(images, profile_name):
 
-    """
-    Make a collage image with a width equal to `width` from `images` and save to `filename`.
-    """
     if not images:
         print('No images for collage found!')
         return False
@@ -26,8 +22,6 @@ def make_collage(images, filename, width, init_height, profile_name):
         # with Image.open(im) as img:
         with Image.open(requests.get(im, stream=True).raw) as img:
             width, height = img.size
-            print("collage")
-            print(width)
             width_list.append(width)
             height_list.append(height)
     width_list.sort()
@@ -38,9 +32,6 @@ def make_collage(images, filename, width, init_height, profile_name):
 
     avg_width = sum(width_list) // len(width_list)
     avg_height = sum(height_list) // len(height_list)
-
-    # print(avg_height, avg_width)
-    # print(min_width,min_height)
 
     width = avg_width
     init_height = avg_height
@@ -105,16 +96,11 @@ def make_collage(images, filename, width, init_height, profile_name):
                     collage_image.paste(img, (int(x), int(y)))
                 x += img.size[0] + margin_size
             y += int(init_height / coef) + margin_size
-    collage_image.save(filename)
-
-    #Save collage to S3
 
     # Create an S3 client
     s3 = boto3.client('s3')
     id = "lambdas3source.collages"
-    # # Creating unique name
-    timestamp = str(int(time.time()))
-    randomnum = str(random.randint(0, 10000))
+    #Creating unique name
     unique_name = profile_name + '_' + 'collage.jpg'
 
     # Upload image to S3
@@ -131,38 +117,4 @@ def make_collage(images, filename, width, init_height, profile_name):
     #Add to db
     dynamo.update_collages_table(profile_name, image_url)
 
-    print(image_url)
     return True
-
-
-def main():
-    # prepare argument parser
-    parse = argparse.ArgumentParser(description='Photo collage maker')
-    parse.add_argument('-f', '--folder', dest='folder', help='folder with images (*.jpg, *.jpeg, *.png)', default='.')
-    parse.add_argument('-o', '--output', dest='output', help='output collage image filename', default='collage.png')
-    parse.add_argument('-w', '--width', dest='width', type=int, help='resulting collage image width')
-    parse.add_argument('-i', '--init_height', dest='init_height', type=int, help='initial height for resize the images')
-    parse.add_argument('-s', '--shuffle', action='store_true', dest='shuffle', help='enable images shuffle')
-
-    args = parse.parse_args()
-    if not args.width or not args.init_height:
-        parse.print_help()
-        exit(1)
-
-    # get images
-    files = [os.path.join(args.folder, fn) for fn in os.listdir(args.folder)]
-    images = [fn for fn in files if os.path.splitext(fn)[1].lower() in ('.jpg', '.jpeg', '.png')]
-    if not images:
-        print('No images for making collage! Please select other directory with images!')
-        exit(1)
-
-    # shuffle images if needed
-    if args.shuffle:
-        random.shuffle(images)
-
-    print('Making collage...')
-    res = make_collage(images, args.output, args.width, args.init_height)
-    if not res:
-        print('Failed to create collage!')
-        exit(1)
-    print('Collage is ready!')

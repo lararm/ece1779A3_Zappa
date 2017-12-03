@@ -11,7 +11,7 @@ from flask import render_template, session, request, escape, redirect, url_for, 
 from app import webapp
 from app import dynamo
 from app import config
-#from app import collage
+from app import collageMaker
 #from wand.image import Image
 #from PIL import Image, ImageDraw, ImageFont
 
@@ -213,10 +213,10 @@ def make_collage():
         ProjectionExpression="#name,picture",
         ExpressionAttributeNames={"#name": "name"}
     )
-    #for profile in profiles['Items']:
-    #    name = profile['name']
-    #    image_list = dynamo.query_tag_table(name)
-    #    collage.make_collage(image_list, 'collage5.jpg', 800, 600, name)
+    for profile in profiles['Items']:
+       name = profile['name']
+       image_list = dynamo.query_tag_table(name)
+       collageMaker.make_collage(image_list, name)
 
     #Display collages
     image_list = []
@@ -242,11 +242,7 @@ def valid_image_extension(ext):
 
     return False
 
-@webapp.route('/signup', methods=['GET','POST'])
-def signup():
-	return render_template("signup.html")
-
-# <<<<<<< HEAD #TODO do we need this lambda_handler? add endpoints for signup submit
+# <<<<<<< HEAD #TODO do we need this lambda_handler?
 #
 # def lambda_handler(event, context):
 #     print("#lambda_handler")
@@ -264,12 +260,6 @@ def signup():
 #         print(e)
 #         print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
 #         raise e
-#
-# @webapp.route('/signup_submit', methods=['POST'])
-# def signup_submit():
-#     return redirect(url_for('signup'))
-#
-#
 #
 # =======
 # >>>>>>> c18fd9ced68265aa0fd9518a3b9fdf505b205101
