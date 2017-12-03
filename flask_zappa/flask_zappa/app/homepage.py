@@ -11,7 +11,6 @@ from flask import render_template, session, request, escape, redirect, url_for, 
 from app import webapp
 from app import dynamo
 from app import config
-from app import collageMaker
 #from wand.image import Image
 #from PIL import Image, ImageDraw, ImageFont
 
@@ -29,6 +28,7 @@ def login():
 @webapp.route('/login_submit', methods=['POST'])
 def login_submit():
     """Handles /login_submit route."""
+
     #Get User Input
     username = request.form['username']
     password = request.form['password']
@@ -50,6 +50,7 @@ def signup():
 @webapp.route('/signup_submit', methods=['POST'])
 def signup_submit():
     """Handles signup_submit route."""
+
 	#Get User Input
     username = request.form['username']
     password = request.form['password']
@@ -78,7 +79,8 @@ def homepage():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    image_list = dynamo.query_image()
+    username = escape(session['username'])
+    image_list = dynamo.query_image(username)
     return render_template("homepage.html", image_names=image_list)
 
 
@@ -86,6 +88,7 @@ def homepage():
 def upload_image_submit():
     """Handles upload_image_submit route."""
     # Get User Input
+    username = escape(session['username'])
     image = request.files['image']
     image_name = image.filename
     image_type = image.content_type
@@ -104,10 +107,13 @@ def upload_image_submit():
     storage = boto3.client('s3')
     storage_id = config.AWS_ID
 
-    # # Creating unique name
+    # Creating unique name
     timestamp = str(int(time.time()))
     randomnum = str(random.randint(0, 10000))
     unique_name = timestamp + "_" + randomnum + "_" + image_name
+
+    # Add image to the Database
+    dynamo.add_new_image(username, unique_name)
 
     # Upload image to S3
     image_new_name = unique_name
@@ -126,20 +132,15 @@ def upload_image_submit():
 @webapp.route('/upload_profile_submit', methods=['POST'])
 def upload_profile_submit():
     """Handles upload_profile_submit route."""
-    print("#profile_submit")
-    # collage_test()
 
     #Get User Input
+    username = escape(session['username'])
     profile_name = request.form['profile_name']
     image = request.files['profile_image']
     image_name = image.filename
     image_type = image.content_type
-    print(profile_name)
-    print(image)
 
-    #Check if there is a face in image FIXME
-    # If user does not select file, browser also
-    # submit a empty part without filename
+    # Check for file
     if image_name == '':
         flash("No image selected for upload.")
         return redirect(url_for('homepage'))
@@ -171,7 +172,7 @@ def upload_profile_submit():
 
     print("image url: " + image_url)
     url = 'https://s3.amazonaws.com/lambdas3source.people/' + image_new_name
-    dynamo.update_profiles_table(profile_name, url)
+    dynamo.update_profiles_table(username, profile_name, url)
 
     return redirect(url_for('homepage'))
 
@@ -183,28 +184,40 @@ def image_info():
     if request.method == 'GET':
         return render_template("image.html")
 
+    username = escape(session['username'])
     image_name = request.form['image_name']
-    tags = dynamo.query_tags(image_name)
+    tags = dynamo.query_tags(username, image_name)
     print(tags)
 
     return render_template("image.html", image_name=image_name, tags=tags)
-
 
 @webapp.route('/query_submit', methods=['POST'])
 def query_submit():
     """Handles query_submit route."""
 
+    username = escape(session['username'])
     tags = request.form['query']
 
     if not tags:
         return redirect(url_for('homepage'))
-    image_list = dynamo.query_tag_table(tags)
+    image_list = dynamo.query_tag_table(username, tags)
     print(tags)
     return render_template("homepage.html", image_names=image_list, query=[tags])
 
+def valid_image_extension(ext):
+    """Determines if image is of a valid extension"""
+    allowed_image_extensions = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif']
+
+    for extension in allowed_image_extensions:
+        if ext == extension:
+            return True
+
+    return False
+
+"""
 @webapp.route('/collages', methods=['GET'])
 def make_collage():
-    """Handles collages route."""
+    #Handles collages route.
     if 'username' not in session:
         return redirect(url_for('login'))
 
@@ -217,6 +230,7 @@ def make_collage():
        name = profile['name']
        image_list = dynamo.query_tag_table(name)
        collageMaker.make_collage(image_list, name)
+       break
 
     #Display collages
     image_list = []
@@ -231,35 +245,4 @@ def make_collage():
         print(collagei['collage'])
 
     return render_template("homepage.html", image_names=image_list)
-
-def valid_image_extension(ext):
-    """Determines if image is of a valid extension"""
-    allowed_image_extensions = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif']
-
-    for extension in allowed_image_extensions:
-        if ext == extension:
-            return True
-
-    return False
-
-# <<<<<<< HEAD #TODO do we need this lambda_handler?
-#
-# def lambda_handler(event, context):
-#     print("#lambda_handler")
-#     #print("Received event: " + json.dumps(event, indent=2))
-#
-#     # Get the object from the event and show its content type
-#     bucket = event['Records'][0]['s3']['bucket']['name']
-#     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
-#     try:
-#         response = s3.get_object(Bucket=bucket, Key=key)
-#         print("CONTENT TYPE: " + response['ContentType'])
-#         print("Key: " + key)
-#         return response['ContentType']
-#     except Exception as e:
-#         print(e)
-#         print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
-#         raise e
-#
-# =======
-# >>>>>>> c18fd9ced68265aa0fd9518a3b9fdf505b205101
+"""

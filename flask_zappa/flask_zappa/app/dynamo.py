@@ -83,14 +83,23 @@ def login_user(username, password):
     flash("Password is incorrect!")
     return False
 
-def query_tag_table(tags):
+def add_new_image(username, image):
+    """Adds a new image to the Image table"""
+    response = dynamodb_client().update_item(TableName='Images_2',
+                                             Key={'image': {"S":image}},
+                                             UpdateExpression='SET username = :user',
+                                             ExpressionAttributeValues={":user" : {"S":username}},
+                                             ReturnValues="ALL_NEW")
+    print(response)
+
+def query_tag_table(username, tags):
     """Queries the database for images that contain all tags provided in the argument tags"""
     tag_list = tags.split(",")
 
     queries = []
     tagcount = 0
     for tag in tag_list:
-        response = query_tag(tag.strip())
+        response = query_tag(username, tag.strip())
         if tagcount == 0:
             queries = response
             tagcount = 1
@@ -100,8 +109,9 @@ def query_tag_table(tags):
     return queries
 
 
-def query_tag(tag): #Need to make this a query in the image table FIXME
-    """Queries the Images table for all images that are tagged with the argument tag"""
+def query_tag(username, tag): #FIXME
+    """Queries the Tags table for all images that are tagged with the argument tag"""
+    print(username)
     response = dynamodb_client().query(TableName="Tags",
                                        Select="ALL_ATTRIBUTES",
                                        KeyConditionExpression="tag = :tagName",
@@ -111,8 +121,9 @@ def query_tag(tag): #Need to make this a query in the image table FIXME
         return []
     return response["Items"][0]["images"]['SS']
 
-def query_image():
-    """Quereies the Images table for all images"""
+def query_image(username): #FIXME
+    """Quereies the Images table for all images for a user"""
+    print(username)
     table = dynamodb_resource().Table('Images')
     response = table.scan(ProjectionExpression="#images",
                           ExpressionAttributeNames={"#images": "image"})
@@ -123,8 +134,9 @@ def query_image():
 
     return image_list
 
-def update_profiles_table(name, picture):
+def update_profiles_table(username, name, picture): #FIXME
     """Queries the Profiles table for all profileS"""
+    print(username)
     response = dynamodb_client().update_item(TableName="Profiles",
                                              Key={"name": {"S":name}},
                                              UpdateExpression='SET picture = :picture',
@@ -141,7 +153,37 @@ def update_collages_table(name, collage):
                                              ReturnValues="ALL_NEW")
     print(response)
 
-def query_tags(image):
+def query_tags(username, image): #FIXME
     """Queries the Images table for all tags associated with this image"""
-    response = dynamodb_client().get_item(TableName="Images", Key={"image":{"S":image}})
+    print(username)
+    response = dynamodb_client().get_item(TableName="Images",
+                                          Key={"image":{"S":image}})
+    print(response)
     return response['Item']['tags']['SS']
+
+def query_profiles(username): #FIXME
+    """Returns list of all profiles."""
+    print(username)
+    table = dynamodb_resource().Table("Profiles")
+    profiles = table.scan(
+        ProjectionExpression="#name,picture",
+        ExpressionAttributeNames={"#name": "name"}
+    )
+    for profile in profiles['Items']:
+        name = profile['name']
+        picture = profile['picture']
+        print(name)
+        print(picture)
+
+    return profiles
+
+'''
+def face_detected(bucket, key): 
+    """Determines if an image has a face in it"""
+    rekognition_client = boto3.client('rekognition')
+    response = rekognition_client.detect_faces(Image={"S3Object": {"Bucket": bucket,
+                                                                   "Name": key}})
+    if response['FaceDetails']:
+        return True
+    return False
+'''
